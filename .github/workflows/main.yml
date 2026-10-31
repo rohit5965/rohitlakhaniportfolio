@@ -43,13 +43,20 @@ jobs:
       - name: Publish portfolio
         id: deployment
         uses: actions/deploy-pages@v4
-
+        
       - name: Enforce HTTPS
         env:
           GH_TOKEN: ${{ secrets.PAGES_ADMIN_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::PAGES_ADMIN_TOKEN secret is missing"
+            exit 1
+          fi
+
           gh api \
             --method PUT \
             "repos/${GH_REPO}/pages" \
-            -f https_enforced=true
+            -F https_enforced=true
+
+          echo "HTTPS enforcement enabled successfully."
