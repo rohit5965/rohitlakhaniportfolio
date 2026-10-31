@@ -44,19 +44,28 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         
+      
       - name: Enforce HTTPS
         env:
           GH_TOKEN: ${{ secrets.PAGES_ADMIN_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
-            echo "::error::PAGES_ADMIN_TOKEN secret is missing"
+            echo "::error::PAGES_ADMIN_TOKEN is missing"
             exit 1
           fi
 
-          gh api \
+          echo "Checking GitHub Pages HTTPS certificate..."
+
+          if gh api \
             --method PUT \
             "repos/${GH_REPO}/pages" \
-            -F https_enforced=true
+            -F https_enforced=true; then
 
-          echo "HTTPS enforcement enabled successfully."
+            echo "HTTPS enforcement enabled successfully."
+
+          else
+            echo "::warning::HTTPS could not be enforced yet."
+            echo "Check certificate provisioning and DNS settings."
+            echo "Deployment itself remains successful."
+          fi
