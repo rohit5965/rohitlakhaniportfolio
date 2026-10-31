@@ -1,3 +1,4 @@
+
 name: Deploy portfolio to GitHub Pages
 
 on:
@@ -16,11 +17,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pages: write
       id-token: write
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Check out source
         uses: actions/checkout@v6
@@ -39,3 +43,13 @@ jobs:
       - name: Publish portfolio
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Enforce HTTPS
+        env:
+          GH_TOKEN: ${{ secrets.PAGES_ADMIN_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh api \
+            --method PUT \
+            "repos/${GH_REPO}/pages" \
+            -f https_enforced=true
